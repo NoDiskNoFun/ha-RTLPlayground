@@ -1,0 +1,116 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "RTLPlayground switch",
+        "description": "Address of the switch in its monitoring API VLAN and the API token (System > Monitoring API in the switch's web UI, or `api token` on its console). Home Assistant must be the allowed client.",
+        "data": {
+          "host": "API address",
+          "token": "API token"
+        },
+        "data_description": {
+          "host": "The `api ip` address of the switch, not its management address.",
+          "token": "32 hexadecimal digits."
+        }
+      },
+      "reauth_confirm": {
+        "title": "New API token",
+        "description": "The switch at {host} refused the token. Enter the current one.",
+        "data": {
+          "token": "API token"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "The switch did not answer. Check the API address, the API VLAN, that the API is active and that Home Assistant is the allowed client.",
+      "invalid_auth": "The switch refused the token. Is it the current token, and is this the API address (not the management address)?",
+      "invalid_token": "A token is 32 hexadecimal digits."
+    },
+    "abort": {
+      "already_configured": "This switch is already set up; address and token were updated.",
+      "reauth_successful": "Token updated.",
+      "wrong_switch": "That address belongs to a different switch."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Polling",
+        "data": {
+          "scan_interval": "Interval (seconds)",
+          "counters": "Byte counters and throughput"
+        },
+        "data_description": {
+          "counters": "One extra request per port and poll."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "chip_temperature": {
+        "name": "Chip temperature"
+      },
+      "boot_time": {
+        "name": "Last boot"
+      },
+      "link": {
+        "name": "Port {port} link",
+        "state": {
+          "down": "Down",
+          "10m": "10 Mbit/s",
+          "100m": "100 Mbit/s",
+          "500m": "500 Mbit/s",
+          "1g": "1 Gbit/s",
+          "2_5g": "2.5 Gbit/s",
+          "5g": "5 Gbit/s",
+          "10g": "10 Gbit/s"
+        }
+      },
+      "rx_rate": {
+        "name": "Port {port} receive rate"
+      },
+      "tx_rate": {
+        "name": "Port {port} transmit rate"
+      },
+      "rx_bytes": {
+        "name": "Port {port} received"
+      },
+      "tx_bytes": {
+        "name": "Port {port} transmitted"
+      },
+      "rx_errors": {
+        "name": "Port {port} receive errors"
+      },
+      "tx_errors": {
+        "name": "Port {port} transmit errors"
+      },
+      "macs": {
+        "name": "Port {port} learned MAC addresses"
+      },
+      "sfp_module": {
+        "name": "Port {port} SFP module"
+      },
+      "sfp_temperature": {
+        "name": "Port {port} SFP temperature"
+      },
+      "sfp_rx_power": {
+        "name": "Port {port} SFP receive power"
+      },
+      "sfp_tx_power": {
+        "name": "Port {port} SFP transmit power"
+      },
+      "sfp_voltage": {
+        "name": "Port {port} SFP supply voltage"
+      },
+      "sfp_tx_bias": {
+        "name": "Port {port} SFP laser bias"
+      }
+    },
+    "binary_sensor": {
+      "port_up": {
+        "name": "Port {port}"
+      }
+    }
+  }
+}

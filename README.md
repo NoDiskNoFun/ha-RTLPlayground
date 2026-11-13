@@ -1,6 +1,6 @@
 # RTLPlayground Switch für Home Assistant
 
-Liest Switches mit der [RTLPlayground](https://github.com/logicog/RTLPlayground)-Firmware über deren **nur lesende Monitoring-API** in einem eigenen VLAN aus. Die Integration kann am Switch nichts verändern: Die Firmware beantwortet in diesem VLAN nur lesende Abfragen, und auch das nur vom erlaubten Client und nur mit gültigem Token.
+Liest Switches mit der [RTLPlayground](https://github.com/NoDiskNoFun/RTLPlayground)-Firmware über deren **nur lesende Monitoring-API** in einem eigenen VLAN aus. Die Integration kann am Switch nichts verändern: Die Firmware beantwortet in diesem VLAN nur lesende Abfragen, und auch das nur vom erlaubten Client und nur mit gültigem Token.
 
 ## Voraussetzungen
 
@@ -25,23 +25,29 @@ api on
 
 **Manuell:** Kopiere den Ordner `custom_components/rtlplayground` nach `/config/custom_components/` und starte Home Assistant neu.
 
-**HACS:** Lege dieses Verzeichnis als eigenes GitHub-Repository an. Trage es dann in HACS unter *Benutzerdefinierte Repositories* mit dem Typ *Integration* ein.
+**HACS:** Trage `https://github.com/NoDiskNoFun/ha-RTLPlayground` in HACS unter *Benutzerdefinierte Repositories* mit dem Typ *Integration* ein.
 
 Danach fügst du die Integration unter *Einstellungen → Geräte & Dienste → Integration hinzufügen → RTLPlayground Switch* hinzu. Dort gibst du die **API-Adresse** (nicht die Management-Adresse) und das **Token** ein.
 
-## Entitäten
+## Geräte und Entitäten
 
-| Entität | Beschreibung |
-|---|---|
-| Chiptemperatur | Temperatur des Switch-Chips |
-| Letzter Start | Zeitpunkt des letzten Neustarts (Diagnose) |
-| Port *n* (Binärsensor) | Verbindung vorhanden |
-| Port *n* Verbindung | Link-Geschwindigkeit: getrennt, 10M … 10G |
-| Port *n* Empfangsrate / Senderate | Durchsatz, berechnet aus den Byte-Zählern |
-| Port *n* empfangen / gesendet | Byte-Zähler (standardmäßig deaktiviert) |
-| Port *n* Empfangs-/Sendefehler, gelernte MACs | Diagnose (standardmäßig deaktiviert) |
-| Port *n* SFP-Modul, -Temperatur, -Empfangsleistung, -Sendeleistung | Nur bei SFP-Ports mit Moduldiagnose (DDM) |
-| Port *n* SFP-Spannung, -Laserstrom | Diagnose (standardmäßig deaktiviert) |
+Der Switch erscheint als Gerät, und **jeder Port als eigenes Gerät**, das über den Switch verbunden ist. Wenn du ein Port-Gerät umbenennst, übernehmen alle Entitäten dieses Ports den Namen. Home Assistant bietet dabei an, auch die Entitäts-IDs anzupassen.
+
+**Ports benennen** geht auf zwei Wegen:
+- **In Home Assistant:** *Einstellungen → Geräte & Dienste → RTLPlayground Switch → Geräte → Port 3 → Stift-Symbol*. Der Name gilt nur in Home Assistant.
+- **Am Switch:** im Webinterface unter Ports oder mit `port 3 name NAS`. Die Integration übernimmt den Namen bei der nächsten Abfrage als Gerätenamen. Hast du den Port schon in Home Assistant benannt, hat dein Name Vorrang.
+
+| Gerät | Entität | Beschreibung |
+|---|---|---|
+| Switch | Chiptemperatur | Temperatur des Switch-Chips |
+| Switch | Letzter Start | Zeitpunkt des letzten Neustarts (Diagnose) |
+| Port | Verbunden | Binärsensor: Link vorhanden |
+| Port | Geschwindigkeit | Getrennt, 10M … 10G |
+| Port | Empfangsrate / Senderate | Durchsatz, berechnet aus den Byte-Zählern |
+| Port | Empfangen / Gesendet | Byte-Zähler (standardmäßig deaktiviert) |
+| Port | Empfangs-/Sendefehler, gelernte MAC-Adressen | Diagnose (standardmäßig deaktiviert) |
+| SFP-Port | SFP-Modul, -Temperatur, -Empfangsleistung, -Sendeleistung | Nur mit Moduldiagnose (DDM) |
+| SFP-Port | SFP-Versorgungsspannung, -Laserstrom | Diagnose (standardmäßig deaktiviert) |
 
 **Optionen:** Abfrageintervall (Standard 30 s) und Byte-Zähler/Durchsatz ein oder aus. Die Byte-Zähler kosten pro Abfrage eine zusätzliche Anfrage je Port.
 

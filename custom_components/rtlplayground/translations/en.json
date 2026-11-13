@@ -55,7 +55,7 @@
         "name": "Last boot"
       },
       "link": {
-        "name": "Port {port} link",
+        "name": "Link speed",
         "state": {
           "down": "Down",
           "10m": "10 Mbit/s",
@@ -68,48 +68,48 @@
         }
       },
       "rx_rate": {
-        "name": "Port {port} receive rate"
+        "name": "Receive rate"
       },
       "tx_rate": {
-        "name": "Port {port} transmit rate"
+        "name": "Transmit rate"
       },
       "rx_bytes": {
-        "name": "Port {port} received"
+        "name": "Received"
       },
       "tx_bytes": {
-        "name": "Port {port} transmitted"
+        "name": "Transmitted"
       },
       "rx_errors": {
-        "name": "Port {port} receive errors"
+        "name": "Receive errors"
       },
       "tx_errors": {
-        "name": "Port {port} transmit errors"
+        "name": "Transmit errors"
       },
       "macs": {
-        "name": "Port {port} learned MAC addresses"
+        "name": "Learned MAC addresses"
       },
       "sfp_module": {
-        "name": "Port {port} SFP module"
+        "name": "SFP module"
       },
       "sfp_temperature": {
-        "name": "Port {port} SFP temperature"
+        "name": "SFP temperature"
       },
       "sfp_rx_power": {
-        "name": "Port {port} SFP receive power"
+        "name": "SFP receive power"
       },
       "sfp_tx_power": {
-        "name": "Port {port} SFP transmit power"
+        "name": "SFP transmit power"
       },
       "sfp_voltage": {
-        "name": "Port {port} SFP supply voltage"
+        "name": "SFP supply voltage"
       },
       "sfp_tx_bias": {
-        "name": "Port {port} SFP laser bias"
+        "name": "SFP laser bias"
       }
     },
     "binary_sensor": {
       "port_up": {
-        "name": "Port {port}"
+        "name": "Connected"
       }
     }
   }

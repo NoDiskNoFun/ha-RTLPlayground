@@ -64,19 +64,19 @@ async def test_entities(hass: HomeAssistant, simulator) -> None:
     assert temp.attributes["unit_of_measurement"] == "°C"
 
     # The simulator: odd ports linked, port 1 at 10G, port 6 an SFP slot
-    assert hass.states.get("binary_sensor.rtlplayground_sim_port_1").state == "on"
-    assert hass.states.get("binary_sensor.rtlplayground_sim_port_2").state == "off"
-    assert hass.states.get("sensor.rtlplayground_sim_port_1_link").state == "10g"
-    assert hass.states.get("sensor.rtlplayground_sim_port_2_link").state == "down"
-    assert hass.states.get("sensor.rtlplayground_sim_port_3_link").state == "100m"
+    assert hass.states.get("binary_sensor.port_1_connected").state == "on"
+    assert hass.states.get("binary_sensor.port_2_connected").state == "off"
+    assert hass.states.get("sensor.port_1_link_speed").state == "10g"
+    assert hass.states.get("sensor.port_2_link_speed").state == "down"
+    assert hass.states.get("sensor.port_3_link_speed").state == "100m"
 
-    sfp = hass.states.get("sensor.rtlplayground_sim_port_6_sfp_temperature")
+    sfp = hass.states.get("sensor.port_6_sfp_temperature")
     assert sfp is not None and 40 <= float(sfp.state) <= 42
-    assert hass.states.get("sensor.rtlplayground_sim_port_6_sfp_module").state == "OEM 10G-SFP+"
-    assert float(hass.states.get("sensor.rtlplayground_sim_port_6_sfp_transmit_power").state) < 0
+    assert hass.states.get("sensor.port_6_sfp_module").state == "OEM 10G-SFP+"
+    assert float(hass.states.get("sensor.port_6_sfp_transmit_power").state) < 0
     # rx power 0 in the simulator: no light
-    assert float(hass.states.get("sensor.rtlplayground_sim_port_6_sfp_receive_power").state) == -40.0
-    assert hass.states.get("sensor.rtlplayground_sim_port_1_sfp_temperature") is None
+    assert float(hass.states.get("sensor.port_6_sfp_receive_power").state) == -40.0
+    assert hass.states.get("sensor.port_1_sfp_temperature") is None
 
     assert hass.states.get("sensor.rtlplayground_sim_last_boot") is not None
 
@@ -85,18 +85,18 @@ async def test_entities(hass: HomeAssistant, simulator) -> None:
     await coordinator.async_refresh()
     await hass.async_block_till_done()
     assert coordinator.data.ports[1].rx_bytes is not None
-    rate = hass.states.get("sensor.rtlplayground_sim_port_1_receive_rate")
+    rate = hass.states.get("sensor.port_1_receive_rate")
     assert rate is not None and rate.state not in ("unknown", "unavailable")
 
     reg = er.async_get(hass)
-    rx = reg.async_get("sensor.rtlplayground_sim_port_1_received")
+    rx = reg.async_get("sensor.port_1_received")
     assert rx is not None and rx.disabled_by is not None
 
 
 async def test_counters_off(hass: HomeAssistant, simulator) -> None:
     await _setup(hass, simulator, {"counters": False, "scan_interval": 30})
-    assert hass.states.get("sensor.rtlplayground_sim_port_1_receive_rate") is None
-    assert hass.states.get("sensor.rtlplayground_sim_port_1_link") is not None
+    assert hass.states.get("sensor.port_1_receive_rate") is None
+    assert hass.states.get("sensor.port_1_link_speed") is not None
 
 
 async def test_wrong_token_starts_reauth(hass: HomeAssistant, simulator) -> None:
@@ -162,7 +162,7 @@ async def test_options_flow(hass: HomeAssistant, simulator) -> None:
     assert result["type"] is FlowResultType.CREATE_ENTRY
     await hass.async_block_till_done()
     assert entry.runtime_data.update_interval.total_seconds() == 60
-    assert hass.states.get("sensor.rtlplayground_sim_port_1_receive_rate") is None
+    assert hass.states.get("sensor.port_1_receive_rate") is None
 
 
 async def test_firmware_wire_format(socket_enabled) -> None:
@@ -188,3 +188,50 @@ async def test_firmware_wire_format(socket_enabled) -> None:
         assert info["chip_temp"] == "47.3 C"
         with pytest.raises(RTLPlaygroundAuthError):
             await RTLPlaygroundApi(session, host, "1" * 32).information()
+
+
+
+async def _switch_cmd(simulator, cmd: str) -> None:
+    """A command through the management web interface of the simulator."""
+    async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar(unsafe=True)) as session:
+        async with session.post(f"http://{simulator}/login", data={"pwd": "1234"},
+                                allow_redirects=False) as r:
+            await r.read()
+        async with session.post(f"http://{simulator}/cmd", data=cmd) as r:
+            assert r.status == 200
+            await r.read()
+
+
+async def test_port_devices_and_names(hass: HomeAssistant, simulator) -> None:
+    """Every port is a device; naming it names all its entities."""
+    from homeassistant.helpers import device_registry as dr
+
+    # A name set on the switch before setup
+    await _switch_cmd(simulator, "port 1 name NAS")
+
+    entry = await _setup(hass, simulator)
+    devices = dr.async_get(hass)
+    switch = devices.async_get_device(identifiers={(DOMAIN, MAC)})
+    port1 = devices.async_get_device(identifiers={(DOMAIN, f"{MAC}_port_1")})
+    port2 = devices.async_get_device(identifiers={(DOMAIN, f"{MAC}_port_2")})
+    assert port1.name == "NAS" and port2.name == "Port 2"
+    assert port1.via_device_id == switch.id
+    assert hass.states.get("sensor.nas_link_speed").name == "NAS Link speed"
+    assert hass.states.get("binary_sensor.nas_connected").name == "NAS Connected"
+
+    # Renamed in Home Assistant: every entity of the port follows
+    devices.async_update_device(port2.id, name_by_user="Drucker")
+    await hass.async_block_till_done()
+    ents = er.async_entries_for_device(er.async_get(hass), port2.id)
+    assert len(ents) > 3
+    for e in ents:
+        state = hass.states.get(e.entity_id)
+        if state is not None:
+            assert state.name.startswith("Drucker ")
+
+    # Renamed on the switch: picked up at the next poll
+    await _switch_cmd(simulator, "port 1 name Server")
+    await entry.runtime_data.async_refresh()
+    await hass.async_block_till_done()
+    assert devices.async_get(port1.id).name == "Server"
+    assert hass.states.get("sensor.nas_link_speed").name == "Server Link speed"

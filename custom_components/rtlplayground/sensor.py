@@ -28,7 +28,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import DOMAIN, LINK_OPTIONS
 from .coordinator import PortData, RTLPlaygroundConfigEntry, RTLPlaygroundCoordinator, SwitchData, parse_temp
-from .entity import RTLPlaygroundEntity, port_label
+from .entity import RTLPlaygroundEntity
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -238,9 +238,8 @@ class RTLPlaygroundPortSensor(RTLPlaygroundEntity, SensorEntity):
 
     def __init__(self, coordinator: RTLPlaygroundCoordinator,
                  description: PortSensorDescription, port: PortData) -> None:
-        super().__init__(coordinator, description.key, port.number)
+        super().__init__(coordinator, description.key, port)
         self.entity_description = description
-        self._attr_translation_placeholders = {"port": port_label(port)}
 
     @property
     def available(self) -> bool:

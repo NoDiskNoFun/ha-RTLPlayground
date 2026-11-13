@@ -3,10 +3,10 @@
   "name": "RTLPlayground Switch",
   "codeowners": [],
   "config_flow": true,
-  "documentation": "https://github.com/logicog/RTLPlayground/blob/main/doc/api_vlan.md",
+  "documentation": "https://github.com/NoDiskNoFun/ha-RTLPlayground",
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/logicog/RTLPlayground/issues",
+  "issue_tracker": "https://github.com/NoDiskNoFun/ha-RTLPlayground/issues",
   "requirements": [],
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

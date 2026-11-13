@@ -49,6 +49,7 @@ state = {
         64: {"active": True, "name": "sixtyFour", "untagged": [1], "tagged": [2], "pvid":[1]}
     },
     "cmd_history": [],
+    "port_names": {},
     "mgmt_vlan": 1,
     # Read-only monitoring API, see doc/api_vlan.md. The simulator has no
     # VLANs: a request carrying an Authorization header stands for one that
@@ -358,6 +359,8 @@ class Handler(SimpleHTTPRequestHandler):
         for cmd in cmdstring.split("\n"):
             pieces = cmd.split(" ")
             handler = self.get_parsers().get(pieces[0])
+            if handler is None:
+                continue
             result = handler(pieces)
             if(result is not None):
                 response.extend(result)
@@ -370,6 +373,7 @@ class Handler(SimpleHTTPRequestHandler):
             "lldp": self._parse_lldp,
             "pvid": self._parse_pvid,
             "api": self._parse_api,
+            "port": self._parse_port,
             "dns": self._parse_dns,
             "ntp": self._parse_ntp,
         }
@@ -419,6 +423,16 @@ class Handler(SimpleHTTPRequestHandler):
             state["vlans"][vid]["pvid"].append(machine_config["phys_to_log_port"][port-1])
         else :
             state["vlans"][vid] = self.newVlan("")
+
+    def _parse_port(self, pieces):
+        # Only "port <n> name [<text>]"; the other port settings are not simulated
+        if len(pieces) >= 3 and pieces[2] == "name" and pieces[1].isdigit():
+            n = int(pieces[1])
+            if len(pieces) > 3:
+                state["port_names"][n] = pieces[3][:16]
+            else:
+                state["port_names"].pop(n, None)
+        return None
 
     def _parse_api(self, pieces):
         a = state["api"]
@@ -517,7 +531,7 @@ class Handler(SimpleHTTPRequestHandler):
             n = i - 1
             item = {
                 "port": i,
-                "name": "",
+                "name": state["port_names"].get(i, ""),
                 "isSFP": machine_config["is_sfp"][i] == 1,
                 "enabled": int(i % 4 != 0),
                 "mtu": f"0x{16383 if i % 2 else 1522:04x}",
@@ -565,7 +579,7 @@ class Handler(SimpleHTTPRequestHandler):
                 rx_b[n] += rate * elapsed // 10_000_000
             item = {
                 "port": i,
-                "name": "",
+                "name": state["port_names"].get(i, ""),
                 "link": ("10G" if i == 1 else "100M-HD") if i % 2 else "DOWN",
                 "macs": "0x01",
                 "txG": f"0x{tx_g[n]:016x}",

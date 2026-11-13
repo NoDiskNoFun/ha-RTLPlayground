@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import PortData, RTLPlaygroundConfigEntry, RTLPlaygroundCoordinator
-from .entity import RTLPlaygroundEntity, port_label
+from .entity import RTLPlaygroundEntity
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: RTLPlaygroundConfigEntry,
@@ -27,8 +27,7 @@ class RTLPlaygroundLinkSensor(RTLPlaygroundEntity, BinarySensorEntity):
     _attr_translation_key = "port_up"
 
     def __init__(self, coordinator: RTLPlaygroundCoordinator, port: PortData) -> None:
-        super().__init__(coordinator, "port_up", port.number)
-        self._attr_translation_placeholders = {"port": port_label(port)}
+        super().__init__(coordinator, "port_up", port)
 
     @property
     def is_on(self) -> bool | None:

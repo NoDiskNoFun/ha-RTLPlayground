@@ -14,10 +14,18 @@ from homeassistant.const import CONF_HOST, CONF_SCAN_INTERVAL, CONF_TOKEN
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import format_mac
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
 
 from .api import RTLPlaygroundApi, RTLPlaygroundAuthError, RTLPlaygroundError
 from .const import (
     CONF_COUNTERS,
+    CONF_RATE_UNIT,
+    DEFAULT_RATE_UNIT,
+    RATE_UNITS,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     MAX_SCAN_INTERVAL,
@@ -131,5 +139,12 @@ class RTLPlaygroundOptionsFlow(OptionsFlow):
                 default=options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
             ): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL)),
             vol.Required(CONF_COUNTERS, default=options.get(CONF_COUNTERS, True)): bool,
+            vol.Required(
+                CONF_RATE_UNIT,
+                default=options.get(CONF_RATE_UNIT, DEFAULT_RATE_UNIT),
+            ): SelectSelector(SelectSelectorConfig(
+                options=list(RATE_UNITS), mode=SelectSelectorMode.LIST,
+                translation_key=CONF_RATE_UNIT,
+            )),
         })
         return self.async_show_form(step_id="init", data_schema=schema)

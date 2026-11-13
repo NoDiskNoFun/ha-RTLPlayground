@@ -5,9 +5,11 @@ from __future__ import annotations
 from homeassistant.const import CONF_HOST, CONF_TOKEN, Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import RTLPlaygroundApi
+from .const import CONF_RATE_UNIT, DEFAULT_RATE_UNIT, RATE_SENSORS, RATE_UNITS
 from .coordinator import RTLPlaygroundConfigEntry, RTLPlaygroundCoordinator
 from .entity import port_device_name, port_identifier
 
@@ -39,7 +41,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: RTLPlaygroundConfigEntry
 
     _sync_port_names()
     entry.async_on_unload(coordinator.async_add_listener(_sync_port_names))
+    _apply_rate_unit(hass, entry)
     return True
+
+
+@callback
+def _apply_rate_unit(hass: HomeAssistant, entry: RTLPlaygroundConfigEntry) -> None:
+    """Shows every throughput sensor in the unit chosen in the options, as if
+    it had been set on each sensor's settings page."""
+    unit = RATE_UNITS.get(entry.options.get(CONF_RATE_UNIT), RATE_UNITS[DEFAULT_RATE_UNIT])
+    registry = er.async_get(hass)
+    mac = dr.format_mac(entry.unique_id or "")
+    prefixes = tuple(f"{mac}_{key}_" for key in RATE_SENSORS)
+    for ent in er.async_entries_for_config_entry(registry, entry.entry_id):
+        if ent.domain != "sensor" or not ent.unique_id.startswith(prefixes):
+            continue
+        current = dict(ent.options.get("sensor", {}))
+        if current.get("unit_of_measurement") != unit:
+            current["unit_of_measurement"] = unit
+            registry.async_update_entity_options(ent.entity_id, "sensor", current)
 
 
 async def _options_updated(hass: HomeAssistant, entry: RTLPlaygroundConfigEntry) -> None:

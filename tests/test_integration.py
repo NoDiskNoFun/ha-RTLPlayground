@@ -235,3 +235,34 @@ async def test_port_devices_and_names(hass: HomeAssistant, simulator) -> None:
     await hass.async_block_till_done()
     assert devices.async_get(port1.id).name == "Server"
     assert hass.states.get("sensor.nas_link_speed").name == "Server Link speed"
+
+
+async def test_rate_unit_option(hass: HomeAssistant, simulator) -> None:
+    """One option switches every throughput sensor between Mbit/s and MB/s."""
+    entry = await _setup(hass, simulator)
+    rate_ids = [f"sensor.port_{n}_{d}_rate" for n in (1, 2) for d in ("receive", "transmit")]
+    for eid in rate_ids:
+        assert hass.states.get(eid).attributes["unit_of_measurement"] == "Mbit/s"
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"scan_interval": 30, "counters": True, "rate_unit": "mbyte_s"})
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+    for eid in rate_ids:
+        assert hass.states.get(eid).attributes["unit_of_measurement"] == "MB/s"
+    # Other sensors keep their units
+    assert hass.states.get("sensor.rtlplayground_sim_chip_temperature").attributes["unit_of_measurement"] == "°C"
+
+    # The value is converted, not just relabelled: 8 Mbit/s = 1 MB/s
+    coordinator = entry.runtime_data
+    coordinator.data.ports[1].rx_rate = 8_000_000.0
+    coordinator.async_update_listeners()
+    await hass.async_block_till_done()
+    assert float(hass.states.get("sensor.port_1_receive_rate").state) == 1.0
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    await hass.config_entries.options.async_configure(
+        result["flow_id"], {"scan_interval": 30, "counters": True, "rate_unit": "mbit_s"})
+    await hass.async_block_till_done()
+    assert hass.states.get("sensor.port_1_receive_rate").attributes["unit_of_measurement"] == "Mbit/s"

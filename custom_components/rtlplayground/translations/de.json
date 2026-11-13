@@ -38,10 +38,12 @@
         "title": "Abfrage",
         "data": {
           "scan_interval": "Intervall (Sekunden)",
-          "counters": "Byte-Zähler und Durchsatz"
+          "counters": "Byte-Zähler und Durchsatz",
+          "rate_unit": "Einheit für Durchsatz"
         },
         "data_description": {
-          "counters": "Eine zusätzliche Anfrage pro Port und Abfrage."
+          "counters": "Eine zusätzliche Anfrage pro Port und Abfrage.",
+          "rate_unit": "Gilt für alle Empfangs- und Senderaten. Mbit/s ist die übliche Netzwerk-Einheit, MB/s die von Dateiübertragungen (1 MB/s = 8 Mbit/s)."
         }
       }
     }
@@ -110,6 +112,14 @@
     "binary_sensor": {
       "port_up": {
         "name": "Verbunden"
+      }
+    }
+  },
+  "selector": {
+    "rate_unit": {
+      "options": {
+        "mbit_s": "Mbit/s (Megabit pro Sekunde)",
+        "mbyte_s": "MB/s (Megabyte pro Sekunde)"
       }
     }
   }

@@ -38,10 +38,12 @@
         "title": "Polling",
         "data": {
           "scan_interval": "Interval (seconds)",
-          "counters": "Byte counters and throughput"
+          "counters": "Byte counters and throughput",
+          "rate_unit": "Throughput unit"
         },
         "data_description": {
-          "counters": "One extra request per port and poll."
+          "counters": "One extra request per port and poll.",
+          "rate_unit": "Applies to every receive and transmit rate. Mbit/s is the usual network unit, MB/s the one of file transfers (1 MB/s = 8 Mbit/s)."
         }
       }
     }
@@ -110,6 +112,14 @@
     "binary_sensor": {
       "port_up": {
         "name": "Connected"
+      }
+    }
+  },
+  "selector": {
+    "rate_unit": {
+      "options": {
+        "mbit_s": "Mbit/s (megabits per second)",
+        "mbyte_s": "MB/s (megabytes per second)"
       }
     }
   }

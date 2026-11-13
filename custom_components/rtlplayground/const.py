@@ -3,6 +3,11 @@
 DOMAIN = "rtlplayground"
 
 CONF_COUNTERS = "counters"
+CONF_RATE_UNIT = "rate_unit"
+# Option value -> unit (UnitOfDataRate.MEGABITS_PER_SECOND / MEGABYTES_PER_SECOND)
+RATE_UNITS = {"mbit_s": "Mbit/s", "mbyte_s": "MB/s"}
+DEFAULT_RATE_UNIT = "mbit_s"
+RATE_SENSORS = ("rx_rate", "tx_rate")
 DEFAULT_SCAN_INTERVAL = 30
 MIN_SCAN_INTERVAL = 10
 MAX_SCAN_INTERVAL = 3600

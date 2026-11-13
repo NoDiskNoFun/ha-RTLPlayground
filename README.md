@@ -49,7 +49,10 @@ Der Switch erscheint als Gerät, und **jeder Port als eigenes Gerät**, das übe
 | SFP-Port | SFP-Modul, -Temperatur, -Empfangsleistung, -Sendeleistung | Nur mit Moduldiagnose (DDM) |
 | SFP-Port | SFP-Versorgungsspannung, -Laserstrom | Diagnose (standardmäßig deaktiviert) |
 
-**Optionen:** Abfrageintervall (Standard 30 s) und Byte-Zähler/Durchsatz ein oder aus. Die Byte-Zähler kosten pro Abfrage eine zusätzliche Anfrage je Port.
+**Optionen** (*Geräte & Dienste → RTLPlayground Switch → Konfigurieren*):
+- **Intervall** der Abfrage, Standard 30 s.
+- **Byte-Zähler und Durchsatz** ein oder aus. Sie kosten pro Abfrage eine zusätzliche Anfrage je Port.
+- **Einheit für Durchsatz:** Mbit/s (Standard) oder MB/s, für alle Empfangs- und Senderaten auf einmal. Home Assistant rechnet die Werte um (1 MB/s = 8 Mbit/s). Eine Einheit, die du an einem einzelnen Sensor einstellst, überschreibt die Option beim nächsten Neuladen der Integration.
 
 Wird das Token am Switch neu erzeugt, fragt Home Assistant automatisch nach dem neuen Token.
 
